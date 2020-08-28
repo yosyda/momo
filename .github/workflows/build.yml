@@ -12,52 +12,52 @@ on:
   pull_request:
 
 jobs:
-  build-windows:
-    name: Build momo for Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Get Versions
-        run: |
-          Get-Content "VERSION" | Foreach-Object {
-            if (!$_) { continue }
-            $var = $_.Split('=')
-            New-Variable -Name $var[0] -Value $var[1] -Force
-          }
-          echo "::set-output name=boost_version::${BOOST_VERSION}"
-        id: versions
-      - name: Cache Boost ${{ steps.versions.outputs.boost_version }}
-        id: cache-boost
-        uses: actions/cache@v2
-        with:
-          path: _cache\boost
-          key: windows-boost-${{ steps.versions.outputs.boost_version }}.zip.v3
-      - run: .\build.bat -package
-        working-directory: build
-        timeout-minutes: 120
-      - name: Output package name
-        run: |
-          Get-Content "VERSION" | Foreach-Object {
-            if (!$_) { continue }
-            $var = $_.Split('=')
-            New-Variable -Name $var[0] -Value $var[1] -Force
-          }
-          $WINVER_MAJOR = [System.Environment]::OSVersion.Version.Major
-          $RELEASE_ID = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId).ReleaseID
-          echo "PACKAGE_NAME=momo-${MOMO_VERSION}_windows-${WINVER_MAJOR}.${RELEASE_ID}.zip" >> windows.env
-          echo "CONTENT_TYPE=application/zip" >> windows.env
-          echo "::set-output name=name::momo-${MOMO_VERSION}_windows-${WINVER_MAJOR}.${RELEASE_ID}.zip"
-        id: package_name
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ steps.package_name.outputs.name }}
-          path: _package/${{ steps.package_name.outputs.name }}
-      - name: Upload Environment
-        uses: actions/upload-artifact@v1
-        with:
-          name: windows.env
-          path: windows.env
+  # build-windows:
+  #   name: Build momo for Windows
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Get Versions
+  #       run: |
+  #         Get-Content "VERSION" | Foreach-Object {
+  #           if (!$_) { continue }
+  #           $var = $_.Split('=')
+  #           New-Variable -Name $var[0] -Value $var[1] -Force
+  #         }
+  #         echo "::set-output name=boost_version::${BOOST_VERSION}"
+  #       id: versions
+  #     - name: Cache Boost ${{ steps.versions.outputs.boost_version }}
+  #       id: cache-boost
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: _cache\boost
+  #         key: windows-boost-${{ steps.versions.outputs.boost_version }}.zip.v3
+  #     - run: .\build.bat -package
+  #       working-directory: build
+  #       timeout-minutes: 120
+  #     - name: Output package name
+  #       run: |
+  #         Get-Content "VERSION" | Foreach-Object {
+  #           if (!$_) { continue }
+  #           $var = $_.Split('=')
+  #           New-Variable -Name $var[0] -Value $var[1] -Force
+  #         }
+  #         $WINVER_MAJOR = [System.Environment]::OSVersion.Version.Major
+  #         $RELEASE_ID = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId).ReleaseID
+  #         echo "PACKAGE_NAME=momo-${MOMO_VERSION}_windows-${WINVER_MAJOR}.${RELEASE_ID}.zip" >> windows.env
+  #         echo "CONTENT_TYPE=application/zip" >> windows.env
+  #         echo "::set-output name=name::momo-${MOMO_VERSION}_windows-${WINVER_MAJOR}.${RELEASE_ID}.zip"
+  #       id: package_name
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v1
+  #       with:
+  #         name: ${{ steps.package_name.outputs.name }}
+  #         path: _package/${{ steps.package_name.outputs.name }}
+  #     - name: Upload Environment
+  #       uses: actions/upload-artifact@v1
+  #       with:
+  #         name: windows.env
+  #         path: windows.env
   build-macos:
     name: Build momo for macOS
     runs-on: macos-latest
@@ -96,62 +96,62 @@ jobs:
         with:
           name: macos.env
           path: macos.env
-  build-linux:
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - raspberry-pi-os_armv6
-          - raspberry-pi-os_armv7
-          - raspberry-pi-os_armv8
-          - ubuntu-16.04_x86_64_ros
-          - ubuntu-18.04_armv8_jetson_nano
-          - ubuntu-18.04_armv8_jetson_xavier
-          - ubuntu-18.04_x86_64
-          - ubuntu-20.04_x86_64
-    name: Build momo for ${{ matrix.name }}
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Get Versions
-        run: |
-          source VERSION
-          echo "::set-output name=boost_version::${BOOST_VERSION}"
-        id: versions
-      - name: Cache Boost ${{ steps.versions.outputs.boost_version }}
-        id: cache-boost
-        uses: actions/cache@v2
-        with:
-          path: _cache/boost
-          key: ${{ matrix.name }}-boost-${{ steps.versions.outputs.boost_version }}.tar.gz.v2
-      - run: ./build.sh --no-tty --no-mount --package ${{ matrix.name }}
-        working-directory: build
-        timeout-minutes: 120
-      - name: Output package name
-        shell: bash
-        run: |
-          source VERSION
-          echo "PACKAGE_NAME=momo-${MOMO_VERSION}_${{ matrix.name }}.tar.gz" >> ${{ matrix.name }}.env
-          echo "CONTENT_TYPE=application/gzip" >> ${{ matrix.name }}.env
-          echo "::set-output name=name::momo-${MOMO_VERSION}_${{ matrix.name }}.tar.gz"
-        id: package_name
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ steps.package_name.outputs.name }}
-          path: _package/${{ steps.package_name.outputs.name }}
-      - name: Upload Environment
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ matrix.name }}.env
-          path: ${{ matrix.name }}.env
+  # build-linux:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       name:
+  #         - raspberry-pi-os_armv6
+  #         - raspberry-pi-os_armv7
+  #         - raspberry-pi-os_armv8
+  #         - ubuntu-16.04_x86_64_ros
+  #         - ubuntu-18.04_armv8_jetson_nano
+  #         - ubuntu-18.04_armv8_jetson_xavier
+  #         - ubuntu-18.04_x86_64
+  #         - ubuntu-20.04_x86_64
+  #   name: Build momo for ${{ matrix.name }}
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Get Versions
+  #       run: |
+  #         source VERSION
+  #         echo "::set-output name=boost_version::${BOOST_VERSION}"
+  #       id: versions
+  #     - name: Cache Boost ${{ steps.versions.outputs.boost_version }}
+  #       id: cache-boost
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: _cache/boost
+  #         key: ${{ matrix.name }}-boost-${{ steps.versions.outputs.boost_version }}.tar.gz.v2
+  #     - run: ./build.sh --no-tty --no-mount --package ${{ matrix.name }}
+  #       working-directory: build
+  #       timeout-minutes: 120
+  #     - name: Output package name
+  #       shell: bash
+  #       run: |
+  #         source VERSION
+  #         echo "PACKAGE_NAME=momo-${MOMO_VERSION}_${{ matrix.name }}.tar.gz" >> ${{ matrix.name }}.env
+  #         echo "CONTENT_TYPE=application/gzip" >> ${{ matrix.name }}.env
+  #         echo "::set-output name=name::momo-${MOMO_VERSION}_${{ matrix.name }}.tar.gz"
+  #       id: package_name
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v1
+  #       with:
+  #         name: ${{ steps.package_name.outputs.name }}
+  #         path: _package/${{ steps.package_name.outputs.name }}
+  #     - name: Upload Environment
+  #       uses: actions/upload-artifact@v1
+  #       with:
+  #         name: ${{ matrix.name }}.env
+  #         path: ${{ matrix.name }}.env
   create-release:
     name: Create Release
     if: contains(github.ref, 'tags/202')
     needs:
-      - build-windows
+      # - build-windows
       - build-macos
-      - build-linux
+      # - build-linux
     runs-on: ubuntu-latest
     steps:
       - name: Create Release
@@ -181,16 +181,16 @@ jobs:
       fail-fast: true
       matrix:
         name:
-          - windows
+          # - windows
           - macos
-          - raspberry-pi-os_armv6
-          - raspberry-pi-os_armv7
-          - raspberry-pi-os_armv8
-          - ubuntu-16.04_x86_64_ros
-          - ubuntu-18.04_armv8_jetson_nano
-          - ubuntu-18.04_armv8_jetson_xavier
-          - ubuntu-18.04_x86_64
-          - ubuntu-20.04_x86_64
+          # - raspberry-pi-os_armv6
+          # - raspberry-pi-os_armv7
+          # - raspberry-pi-os_armv8
+          # - ubuntu-16.04_x86_64_ros
+          # - ubuntu-18.04_armv8_jetson_nano
+          # - ubuntu-18.04_armv8_jetson_xavier
+          # - ubuntu-18.04_x86_64
+          # - ubuntu-20.04_x86_64
     steps:
       - uses: actions/download-artifact@v1
         with:
