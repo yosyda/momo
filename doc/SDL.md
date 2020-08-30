@@ -11,7 +11,7 @@ Momo の SDL 機能をカスタマイズしてミュート・ボタンを追加�
 
 ### サンプル・プログラムの動作環境
 
-- サンプル・プログラムのビルド・動作確認は MacOS Catalina のみで行っています
+- サンプル・プログラムのビルド・動作確認は MacOS のみで行っています
 
 ### サンプル・プログラムをビルドする
 
@@ -22,7 +22,7 @@ git checkout feature/sdl-sample
 build/build.sh macos
 ```
 
-また、 GitHub Actions も利用できます。
+また、 GitHub Actions を利用して Momo をビルドすることもできます。  
 詳細は Momo のソースの `.github/workflows` 以下を参照してください
 
 ### サンプル・プログラムを実行する
@@ -30,7 +30,7 @@ build/build.sh macos
 Ayame Lite を利用してサンプル・プログラムを実行する手順を示します。  
 例では、 `momo-sdl-sample` というルーム ID を利用していますが、こちらを推測されにくい値に変更することを推奨します。
 
-1) Momo を実行する
+#### 1. Momo を実行する
 
 以下のコマンドで Momo を実行します。
 
@@ -38,29 +38,30 @@ Ayame Lite を利用してサンプル・プログラムを実行する手順を
 _build/macos/momo --resolution VGA --use-sdl ayame wss://ayame-lite.shiguredo.jp/signaling momo-sdl-sample
 ```
 
-2) Ayame Web SDK で受信する
+#### 2. Ayame Web SDK で接続する
 
 ブラウザで以下の Ayame Web SDK のページを開き、接続ボタンをクリックします。
 
 https://openayame.github.io/ayame-web-sdk-samples/sendrecv.html?roomId=momo-sdl-sample
 
-3) 映像・音声をミュートする
+#### 3. 映像・音声をミュートする
 
 カーソルを Momo のウィンドウの右下に持っていくと、カメラとマイクのアイコンが表示されます。  
-カメラをクリックすれば映像が、マイクをクリックすれば音声が、それぞれミュートされます。
+カメラをクリックすれば映像が、マイクをクリックすれば音声が、それぞれミュートされます。  
+ミュートを解除したい場合は、再度アイコンをクリックします。
 
 ### サンプル・プログラム実行時の注意点
 
 #### ボタンが表示されない
 
-Momo の実行パスの下に、ボタンのアイコンが入った `html` ディレクトリーが必要です。  
+Momo の実行パスの直下に、ボタンのアイコンが入った `html` ディレクトリーが必要です。  
 ミュート・ボタンのアイコンを実行時にロードしているためです。
 
 ## カスタマイズのための Tips
 
 ### WebRTC で送信する映像・音声をミュートする
 
-libwebrtc の `VideoTrackInterface, AudioTrackInterface` に実装されている、 `set_enabled` という関数を利用しています。  
+libwebrtc の `VideoTrackInterface, AudioTrackInterface` に実装されている `set_enabled` を利用しています。  
 libwebrtc のソース・コードの調査には [Chromium Code Search](https://source.chromium.org/) が便利です。
 
 ### SDL について
@@ -76,7 +77,7 @@ Momo は C++ で実装されており SDL を直接利用できるため、バ�
 ### SDL_image でミュート・ボタンのアイコンを表示する
 
 ミュート・ボタンのアイコンを SDL で表示するために [SDL_image](https://www.libsdl.org/projects/SDL_image/) を利用しています。  
-SDL でボタン・クリックなどのイベントをトリガーするには、 SDL_Event を利用したコーディングが必要です。  
+SDL_image で表示したボタンに、クリック時の処理を実装するには SDL_Event を利用したコーディングが必要です。  
 詳細は後のセクションで説明します。
 
 ### SDL を利用したレンダリングの流れ
@@ -85,7 +86,7 @@ SDL では以下の流れでレンダリングを行います。
 Momo では `src/sdl_renderer/sdl_renderer.cpp` の `SDLRenderer::RenderThread` に処理が実装されています。
 
 1. SDL_Surface を作成する
-    - WebRTC で受信した映像は、 SDL_CreateRGBSurfaceFrom を呼び出し、フレームの映像を元に Surface を作成します
+    - WebRTC で受信した映像の場合は、 SDL_CreateRGBSurfaceFrom を呼び出し、フレームの映像を元に Surface を作成します
     - SDL_image を利用する場合は IMG_Load を呼び出し、画像ファイルから SDL_Surface を作成します
 2. SDL_CreateTextureFromSurface を呼び出し、 SDL_Surface から SDL_Texture を作成する
 3. SDL_RenderCopy を呼び出し、 SDL_Texture の内容を SDL_Renderer にコピーする
@@ -93,7 +94,7 @@ Momo では `src/sdl_renderer/sdl_renderer.cpp` の `SDLRenderer::RenderThread` 
 
 ### SDL_image を追加して Momo をビルドする
 
-MacOS における Momo のビルドは `./build/build.sh macos` で実行しまが、 `build.sh` の内部では、ビルドに必要な依存のインストールと cmake によるビルドが行われています。  
+MacOS における Momo のビルドは `./build/build.sh macos` で実行しますが、 `build.sh` の内部では、ビルドに必要な依存のインストールと cmake によるビルドが行われています。  
 前者は `build/macos/install_deps.sh` 、後者は `CMakeLists.txt` に処理が記述されています。
 
 SDL_image を追加してビルドを行うために、上記のファイルに以下の修正を加えています。
