@@ -3,7 +3,20 @@
 このドキュメントでは、 Momo の SDL 機能のカスタマイズ方法を説明します。  
 まず、 Momo の SDL 機能の実装について解説した後、カスタマイズ例として、ミュート・ボタンを追加する流れを解説します。
 
+## 対象とする読者
+
+以下のような読者を想定しています。
+
+- Momo の　SDL 機能をカスタマイズしたい
+- 調べながら C++ を書ける
+- SDL の初歩的な知識がある
+  - これから SDL を学習する方は、 Momo のソース・コードと併せて [SDL 入門のための参考リンク集](#SDL\ 入門のための参考リンク集) を参照することをおすすめします。
+
 ## Momo の SDL 機能の実装
+
+### SDL 機能が実装されている箇所
+
+`src/sdl_renderer` ディレクトリ以下です。
 
 ### SDL で実装されている処理
 
@@ -12,12 +25,7 @@ Momo の SDL 機能では以下の2つの処理が実装されています。
 - WebRTC で受信した映像の描画
 - SDL_Event のハンドリング
 
-ソース上では `src/sdl_renderer` ディレクトリ以下が該当します。  
-
-以降の章では、これらの処理の内容について説明していきますが、 SDL の基本的な知識を前提としています。  
-SDL を利用したことが無い方は ...
-
-TODO: SDL の Hello World をわかりやすく解説しているサイトへのリンクを貼る or 無ければ gist を書く
+以降の章では、これらの処理について説明していきます。
 
 ### WebRTC で受信した映像の描画
 
@@ -118,7 +126,7 @@ WebRTC の映像のフレームを SDL_RenderCopy した上に、ミュート・
 
 Momo の映像と音声の送信は libwebrtc が担っており、 SDL を経由していません。
 そのため、 libwebrtc の API で映像と音声をミュートする方法を調べる必要があります。  
-調査の結果、今回は `VideoTrackInterface, AudioTrackInterface` に実装されている `set_enabled` を利用することにしました。
+調査の結果、今回は `VideoTrackInterface, AudioTrackInterface` に実装されている `set_enabled` を利用することにしました。  
 
 また、 libwebrtc のソースの調査には [Chromium Code Search](https://source.chromium.org/) を利用しました。  
 ブラウザで webrtc のソースコードが閲覧、検索できるので非常に便利です。
@@ -126,7 +134,8 @@ Momo の映像と音声の送信は libwebrtc が担っており、 SDL を経�
 ### ミュート機能の実装
 
 `SDLRenderer::PollEvent()` にミュート・ボタンがクリックされた際の条件分岐を追加して、前の章で調べた `set_enabled` を呼び出します。  
-これで、ミュート・ボタンををクリックすると、 WebRTC で送信される映像と音声がミュートされるようになりました。
+これで、ミュート・ボタンををクリックすると、 WebRTC で送信される映像と音声がミュートされるようになりました。  
+現在の実装では、 Momo の実行時に `--show-me` オプションを指定して、送信する映像を SDL のウィンドウに表示した際もミュートが動作することも確認しています。
 
 実際のコードでは以下のように `set_enabled` をラップした `RTCManager::IsVideoEnabled` 、 `RTCManager::IsAudioEnabled` を実装して呼び出しています。
 
@@ -181,3 +190,19 @@ Momo で Ayame に接続する詳細な方法については [USE_AYAME.md](./US
 - macOS 10.15.6 のみで動作を確認しています
 - Momo を実行するパスの直下に、ソースに含まれる `html` ディレクトリが存在する必要があります
   - ミュート・ボタンの画像ファイルを動的に読み込んでいるためです
+
+## SDL 入門のための参考リンク集
+
+### [SDL2の紹介](https://www.slideshare.net/nyaocat/sdl2)
+
+SDL の特徴が日本語でわかりやすくまとめられています。
+
+### [Lazy Foo's Productions](https://lazyfoo.net/tutorials/SDL/index.php)
+
+SDL を利用してゲーム・プログラミングを学ぶためのサイトです。  
+サンプル・コードが豊富なので、 SDL の API の利用方法を調べる際に参考になります。
+
+### [SDL Wiki](https://wiki.libsdl.org/FrontPage)
+
+SDL 本家の Wiki です。  
+API のリファレンスや外部チュートリアルへのリンク集、 FAQs などの情報がまとめられています。
