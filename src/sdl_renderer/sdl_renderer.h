@@ -18,7 +18,7 @@
 #include <api/video/video_sink_interface.h>
 #include <rtc/rtc_manager.h>
 #include <rtc/video_track_receiver.h>
-#include <rtc_base/critical_section.h>
+#include <rtc_base/synchronization/mutex.h>
 
 class SDLRenderer : public VideoTrackReceiver {
  public:
@@ -45,7 +45,7 @@ class SDLRenderer : public VideoTrackReceiver {
 
     void SetOutlineRect(int x, int y, int width, int height);
 
-    rtc::CriticalSection* GetCriticalSection();
+    webrtc::Mutex* GetMutex();
     bool GetOutlineChanged();
     int GetOffsetX();
     int GetOffsetY();
@@ -58,7 +58,7 @@ class SDLRenderer : public VideoTrackReceiver {
    private:
     SDLRenderer* renderer_;
     rtc::scoped_refptr<webrtc::VideoTrackInterface> track_;
-    rtc::CriticalSection frame_params_lock_;
+    webrtc::Mutex frame_params_lock_;
     int outline_offset_x_;
     int outline_offset_y_;
     int outline_width_;
@@ -83,7 +83,7 @@ class SDLRenderer : public VideoTrackReceiver {
   bool CheckCollision(int x, int y, SDL_Rect rect);
   void PollEvent();
 
-  rtc::CriticalSection sinks_lock_;
+  webrtc::Mutex sinks_lock_;
   typedef std::vector<
       std::pair<webrtc::VideoTrackInterface*, std::unique_ptr<Sink> > >
       VideoTrackSinkVector;

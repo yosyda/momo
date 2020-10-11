@@ -17,16 +17,25 @@
 #include <memory>
 
 // WebRTC
-#include <connection_settings.h>
 #include <modules/video_capture/video_capture_defines.h>
 #include <modules/video_capture/video_capture_impl.h>
 #include <rtc/scalable_track_source.h>
-#include <rtc_base/critical_section.h>
 #include <rtc_base/platform_thread.h>
+#include <rtc_base/synchronization/mutex.h>
+
+struct V4L2VideoCapturerConfig {
+  std::string video_device;
+  int width = 640;
+  int height = 480;
+  int framerate = 30;
+  bool force_i420 = false;
+  bool use_native = false;
+};
 
 class V4L2VideoCapturer : public ScalableVideoTrackSource {
  public:
-  static rtc::scoped_refptr<V4L2VideoCapturer> Create(ConnectionSettings cs);
+  static rtc::scoped_refptr<V4L2VideoCapturer> Create(
+      V4L2VideoCapturerConfig config);
   static void LogDeviceList(
       webrtc::VideoCaptureModule::DeviceInfo* device_info);
   V4L2VideoCapturer();
@@ -34,12 +43,15 @@ class V4L2VideoCapturer : public ScalableVideoTrackSource {
 
   int32_t Init(const char* deviceUniqueId,
                const std::string& specifiedVideoDevice);
-  virtual int32_t StartCapture(ConnectionSettings cs);
-  virtual int32_t StopCapture();
+  virtual int32_t StartCapture(V4L2VideoCapturerConfig config);
   virtual bool UseNativeBuffer() override;
-  virtual bool OnCaptured(struct v4l2_buffer& buf);
 
  protected:
+  virtual int32_t StopCapture();
+  virtual bool AllocateVideoBuffers();
+  virtual bool DeAllocateVideoBuffers();
+  virtual bool OnCaptured(struct v4l2_buffer& buf);
+
   int32_t _deviceFd;
   int32_t _currentWidth;
   int32_t _currentHeight;
@@ -54,21 +66,19 @@ class V4L2VideoCapturer : public ScalableVideoTrackSource {
  private:
   static rtc::scoped_refptr<V4L2VideoCapturer> Create(
       webrtc::VideoCaptureModule::DeviceInfo* device_info,
-      ConnectionSettings cs,
+      V4L2VideoCapturerConfig config,
       size_t capture_device_index);
   bool FindDevice(const char* deviceUniqueIdUTF8, const std::string& device);
 
   enum { kNoOfV4L2Bufffers = 4 };
 
-  bool AllocateVideoBuffers();
-  bool DeAllocateVideoBuffers();
   static void CaptureThread(void*);
   bool CaptureProcess();
 
   // TODO(pbos): Stop using unique_ptr and resetting the thread.
   std::unique_ptr<rtc::PlatformThread> _captureThread;
-  rtc::CriticalSection _captureCritSect;
-  bool quit_ RTC_GUARDED_BY(_captureCritSect);
+  webrtc::Mutex capture_lock_;
+  bool quit_ RTC_GUARDED_BY(capture_lock_);
   std::string _videoDevice;
 
   int32_t _buffersAllocatedByDevice;
