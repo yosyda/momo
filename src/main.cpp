@@ -95,9 +95,24 @@ int main(int argc, char* argv[]) {
         return nullptr;
       }
       auto size = args.GetSize();
+      
+      // ディスプレイが2枚の場合は disp_num == 2
+      auto disp_num = sources.size();
+      auto index = 0;
+      // id指定無しの場合と、明示的にid==0の場合は、メインディスプレイを転送
+      if (!args.screen_capture_id){
+        index = 0;
+      }else{
+        // 指定したidが存在しないディスプレイの場合はエラー
+        if (disp_num < args.screen_capture_id){
+          RTC_LOG(LS_ERROR) << __FUNCTION__ << "Failed to open screen id[" << args.screen_capture_id << "]";
+          return nullptr;
+        }
+        index = args.screen_capture_id - 1;
+      }
       rtc::scoped_refptr<ScreenVideoCapturer> capturer(
           new rtc::RefCountedObject<ScreenVideoCapturer>(
-              sources[0].id, size.width, size.height, args.framerate));
+              sources[index].id, size.width, size.height, args.framerate));
       return capturer;
     }
 #endif

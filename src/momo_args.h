@@ -37,6 +37,7 @@ struct MomoArgs {
   unsigned int serial_rate = 9600;
   bool insecure = false;
   bool screen_capture = false;
+  int screen_capture_id = 0;
   int metrics_port = -1;
   bool metrics_allow_external_ip = false;
 

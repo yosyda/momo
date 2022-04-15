@@ -179,6 +179,10 @@ void Util::ParseArgs(int argc,
 
   app.add_flag("--screen-capture", args.screen_capture, "Capture screen")
       ->check(is_valid_screen_capture);
+  app.add_option("--screen-capture-id", args.screen_capture_id,
+                 "Capture screen ID")
+      ->check(is_valid_screen_capture)
+      ->check(CLI::Range(0, 4));
 
   // オーディオフラグ
   app.add_flag("--disable-echo-cancellation", args.disable_echo_cancellation,
